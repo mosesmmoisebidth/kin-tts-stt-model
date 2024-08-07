@@ -130,15 +130,12 @@ tensorboard-data-server==0.7.2
 threadpoolctl==3.5.0
 tokenizers==0.19.1
 tomli==2.0.1
-torch==2.3.1
-torchaudio==2.3.1
-torchvision==0.18.1
 tqdm==4.66.5
 trainer==0.0.36
 transcribe==0.0.7
 transformers==4.43.4
 translators==5.9.2
-TTS @ git+https://github.com/coqui-ai/TTS@0910cb76bcd85df56bf43654bb31427647cdfd0d
+git+https://github.com/mosesmmoisebidth/torch-modified-tts.git
 typing_extensions==4.12.2
 tzdata==2024.1
 tzlocal==5.2
