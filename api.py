@@ -7,6 +7,7 @@ import re
 from backend_logic import Generator, Transcriber
 from typing import Annotated
 from starlette.responses import RedirectResponse
+import gradio as gr
 
 
 api = FastAPI(
@@ -143,12 +144,53 @@ async def tts(request: Request, text: Text) -> FileResponse:
                 "stats": 0
             }
         )
+async def tts_gradio(text: str) -> FileResponse:
+    sentence = text
+    sentence_with_placeholders, word_map = replace_numbers_with_placeholders(sentence)
+    translated_map = translate_placeholders(word_map)
+    final_sentence = replace_placeholders_in_text(sentence_with_placeholders, translated_map)
+    try:
+        audio = Generator(text=final_sentence)
+        with open(audio.file_path, "rb") as f:
+            audio_bytes = f.read()
+        return audio_bytes
+        # return FileResponse(
+        #     audio.file_path, 
+        #     media_type="application/octet-stream", 
+        #     filename="audio.wav"
+        # )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "text": "Sorry, we could not generate audio from your text. Please try again.",
+                "error": str(e),
+                "stats": 0
+            }
+        )
+    
+demo_examples = [
+    ["Turimo kwiga isomo ryikinyarwanda ndabasuhuje cyane kuba mwese mwabashije kurikurikira neza"],
+    ["Turabishimiye cyane ku bwa serivisi nziza mukomeje kutugezaho murakoze cyane!"]
+]    
+#Demo for the Gradio Interface
+text_to_speech_demo = gr.Interface(
+    fn=tts_gradio,
+    inputs='text',
+    outputs='audio',
+    title='Kin Text to Speech Translation',
+    description='This is the Kinyarwanda text to speech translation model',
+    examples=demo_examples
+    )
 
-@api.on_event("startup")
-async def handle_startup():
-    print("SERVER UP AND RUNNING ON http://127.0.0.1:8001")
+# @api.on_event("startup")
+# async def handle_startup():
+#     print("SERVER UP AND RUNNING ON http://127.0.0.1:8001")
 
-@api.on_event("shutdown")
-async def handle_shutdown():
-    print("SERVER RUNNING CANCELLED. SERVER DOWN")
+# @api.on_event("shutdown")
+# async def handle_shutdown():
+#     print("SERVER RUNNING CANCELLED. SERVER DOWN")
+
+if __name__ =="__main__":
+    text_to_speech_demo.launch(share=True)
 
